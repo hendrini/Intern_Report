@@ -1,1 +1,52 @@
+## Temporary Microsoft Office files
 ~$*
+
+## Core LaTeX auxiliary files
+*.aux
+*.log
+*.toc
+*.lof
+*.lot
+*.fls
+*.out
+*.nav
+*.snm
+*.synctex.gz
+*.fdb_latexmk
+
+## Bibliography
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+
+## Intermediate files
+*.dvi
+*.ps
+*.pdfsync
+
+## Glossaries / Nomenclature
+*.glo
+*.idx
+*.ist
+*.acn
+*.acr
+*.alg
+*.glg
+*.gls
+*.glsdefs
+*.ilg
+*.ind
+
+## Meta / Editors
+*.swp
+*.swm
+*.tmp
+*.bak
+
+## latexmk specific
+*.aux.bak
+*.pdf.bak
+*.fls
+*.mk
+latexmkrc

@@ -1,0 +1,655 @@
+\documentclass[a4paper,11pt]{report}
+
+\usepackage[a4paper,top=4.3cm]{geometry}
+\usepackage{fancyhdr}
+
+\usepackage[english]{babel}  % language
+\usepackage{xcolor,graphicx} % graphics and colorings
+
+\fancypagestyle{plain}{%
+	\renewcommand{\headrulewidth}{0pt}%
+	\fancyhf{}%
+	\fancyfoot[R]{\thepage}
+}
+\usepackage{url} 
+\urlstyle{same} 
+\usepackage[numbers]{natbib}
+
+%=========== please fill in the following data:
+\newcommand{\mytitle}{Development of a PostGIS-Based Geospatial Infrastructure for Wind Farm Planning}
+\newcommand{\myname}{Nils Hendrischke}
+\newcommand{\thesisType}{Internship Report}
+
+\usepackage[pdfdisplaydoctitle,menucolor=orange!40!black,filecolor=magenta!40!black,urlcolor=blue!40!black,linkcolor=red!40!black,citecolor=green!40!black,colorlinks]{hyperref}
+\hypersetup{pdftitle={\mytitle}, pdfauthor={\myname}}
+
+% Euro Symbol \euro{}
+\usepackage{eurosym}
+
+% Tables
+\usepackage{tabularx}
+\usepackage{booktabs}
+
+% Code Listings
+\usepackage{listings}
+\usepackage{float}
+\floatstyle{ruled}
+\newfloat{script}{htbp}{los}[chapter]
+\floatname{script}{Script}
+\usepackage{listingsutf8}
+\lstset{
+    inputencoding=utf8,
+}
+
+\lstdefinestyle{sqlstyle}{
+    language=SQL,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue!70!black}\bfseries,
+    stringstyle=\color{green!40!black},
+    commentstyle=\color{gray},
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=10pt,
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=2,
+    literate={Ö}{{\"O}}1 {Ä}{{\"A}}1 {Ü}{{\"U}}1 
+             {ö}{{\"o}}1 {ä}{{\"a}}1 {ü}{{\"u}}1 
+             {ß}{{\ss}}1
+             {°}{{$^\circ$}}1
+             {—}{{---}}1
+}
+\lstdefinestyle{sqlstylesmall}{
+    language=SQL,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue!70!black}\bfseries,
+    stringstyle=\color{green!40!black},
+    commentstyle=\color{gray},
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=10pt,
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=2,
+    literate={Ö}{{\"O}}1 {Ä}{{\"A}}1 {Ü}{{\"U}}1 
+             {ö}{{\"o}}1 {ä}{{\"a}}1 {ü}{{\"u}}1 
+             {ß}{{\ss}}1
+             {°}{{$^\circ$}}1
+             {—}{{---}}1
+}
+
+% Pseudocode
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+
+
+%\date{} % only month and year
+\begin{document}
+\makeatletter
+\@openrightfalse
+\makeatother
+\selectlanguage{english}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%TITLE PAGE START%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newgeometry{centering}
+\begin{titlepage}
+
+\begin{center}
+	\vspace*{-2cm}
+	\begin{minipage}{0.49\textwidth}
+    \includegraphics[height=2.5cm]{Figures/Universität_Potsdam_logo.png}
+\end{minipage}
+\hfill
+\begin{minipage}{0.49\textwidth}
+    \flushright
+    \includegraphics[height=1cm]{Figures/15.1.4-logo-nextwind-4c-2-e1693403732562.png}
+\end{minipage}
+	\vspace{4.2cm}
+
+	{\Huge \textbf{\mytitle} \par}
+	\vspace*{4.3cm}
+	\textbf{\LARGE \myname}\\
+	\vspace*{0.5cm}
+	\vspace*{0.2cm}
+	{\large \thesisType}\\
+	\vspace*{1.0cm}
+	{\Large December 2025}\\
+	\vspace*{3.5cm}
+	\begin{tabular}{r l}
+		Supervisor at University of Potsdam: & Gerold Zeilinger\\
+		Supervisor at Nextwind Management GmbH: & Behrooz Rostami\\
+	\end{tabular}
+
+\end{center}
+
+\end{titlepage}
+\restoregeometry
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%TITLE PAGE END%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\phantom{a}
+\vspace{400pt}
+
+\noindent
+I hereby declare that I have written this internship report independently and without any unauthorized assistance. All sources and materials used have been properly acknowledged. 
+Artificial intelligence tools were used exclusively for language refinement and formatting purposes. The content, analysis, and conclusions presented in this report are entirely my own work.
+
+\vspace{1cm}
+\begin{tabular}[h]{lll} Berlin, & \underline{\hspace{5cm}} & \underline{\hspace{6cm}}\\
+ & \small{Date} & \small{Signature}
+\end{tabular}
+\normalsize
+\newpage
+
+\chapter*{}\vspace{-4\baselineskip}
+
+\selectlanguage{english}
+
+\section*{Abstract}
+As NeXtwind continues to grow rapidly, the company faces several challenges in its technical infrastructure and data management. In the field of geospatial data, our goal is to provide colleagues with a synchronized, user-friendly system for accessing and managing spatial information. 
+
+Previously, wind farm planning relied heavily on printed maps and shapefiles. Data was stored in shared SharePoint folders, and simultaneous file access frequently led to errors and inconsistencies. 
+The goal of this report is to design and implement a PostGIS-based database that can be accessed through both common SQL query tools and desktop GIS, while also providing a guided introduction on how the system works and how it can be used. The report explains the modeling and implementation processes, outlines possible technical applications, and discusses how the database structure aligns with the company’s practical requirements.
+
+The presented data model and database together form a digital twin of NeXtWind’s wind and energy parks, representing elements such as planned and existing wind turbines, cable routes, relevant land parcels, and administrative boundaries. The model is designed to be scalable, with clearly defined attributes to support flexible analysis, planning, and reporting. 
+Finally, the report demonstrates examples of automation through database triggers and outlines potential directions for future development and system evolution. 
+
+\tableofcontents
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Introduction}\label{chap:intro}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+NeXtWind is a renewable energy company founded in 2020, specializing in the repowering of onshore wind farms. Its core strategy involves replacing outdated wind turbines with modern, higher-capacity models to significantly increase energy output on existing sites. Developing a wind farm involves multiple interdependent steps: identifying suitable locations based on wind and grid conditions, negotiating with landowners and municipalities, conducting environmental assessments, obtaining regulatory approval (e.g. under the Federal Immission Control Act (Bundes-Immissionsschutzgesetz, BImSchG)), and managing detailed design, construction, and commissioning. The company also plans to expand into solar energy, battery storage, and the construction of its own substations to play a more integrated and profitable role in Germany’s energy sector. 
+
+As NeXtWind continues to expand its portfolio, the need for a coherent digital infrastructure becomes increasingly important. A central part of this digital transformation is the creation of a digital twin of the company’s assets and planning data — a system that reflects the current and planned state of each energy park in real time. Visualization of this information is essential for efficient decision-making across teams.
+
+Within this digital twin, the geospatial component plays a key role. Being able to visualize and query the current park layout at the push of a button is as crucial as checking the current Stage-Gate status of a project — a system that was recently introduced to track the development phases of the energy parks. Tasks such as potential analysis, park layout optimization, environmental planning, or the calculation of land lease payments all depend on an accurate and flexible representation of real-world features such as land parcels, turbines, access roads, and grid connections. 
+
+To establish a system for categorizing all relevant features and depict their relationships we introduce the concept of Entity-Relationship Models (ERM) \cite{chen1976, er_tu_berlin}. The ERM proposed in this report has been developed primarily from a project development and construction perspective, reflecting the author’s position within that department. Nonetheless, it is designed to remain extensible so that, if the concept is pursued further, future adaptations can incorporate additional aspects of asset management, operations, or maintenance workflows as the company’s digital infrastructure evolves. 
+
+While various database-like tools are already in use across the company — such as Airtable, Monday.com, or Excel — these systems are not designed to handle geospatial relationships or spatial analysis. They are valuable for workflow and metadata management but lack the functionality to represent and process spatial geometries. For this reason, a dedicated geospatial database system is required. The proposed solution — based on PostgreSQL with the PostGIS extension — adds full geospatial capabilities to a robust relational database system. Its open architecture and API accessibility make it possible to connect or synchronize with other company systems, such as Airtable, in a future integration phase, provided that NeXtWind decides to adopt and further develop this solution in coordination with management and the IT team. 
+
+This report is structured as follows: Chapter \ref{chap:motivation} discusses the motivation for establishing a geospatial database at NeXtWind, outlining current challenges and the opportunities that arise from adopting a PostGIS-based solution. Chapter \ref{chap:datamodel} presents the conceptual data model, defining the core entities and relationships required to represent the company’s assets in a geospatial context. Chapter \ref{chap:database} describes the implementation of this model in PostgreSQL/PostGIS, including example queries and automation through triggers. The report concludes with Chapter \ref{chap:conclusion},  a discussion of potential next steps toward system expansion and integration within the company’s digital infrastructure. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Current Status and Motivation}\label{chap:motivation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+At present, most geospatial work at NeXtWind is carried out manually and managed in a decentralized way. Each business unit (BU) maintains its own desktop GIS project files, which contain collections of visualization templates, and links to various geospatial data files. These files exist in multiple formats — including Shapefiles (e.g., \url{SharePoint/WP\_Altmark/09\_Planning/03\_QGIS/Standort\_E-82.shp}), CAD files (\url{SharePoint/GIS/Projects/Kirchdorf\_Ni/Working Files/Kirchdorf\_WEA.dxf}), GeoPackages, or KML files — and often contain similar information, such as wind turbine locations (WEA – Windenergieanlagen). While such formats are convenient for local use and data exchange, they are not suitable for centralized storage. Combined with SharePoint synchronization, they frequently lead to duplicated datasets, conflicting versions, and lack true multi-user editing.
+
+Recognizing these limitations, some datasets have already been migrated to QGIS Cloud (\url{https://qgiscloud.com/}), a data hosting and Web-GIS service. However, the QGIS Cloud database has several drawbacks: it offers limited configurability, is disproportionately expensive (approximately 20\euro{} per month per GB), and restricts connections to a maximum of 20 users. Moreover, the current setup was established without a predefined data model or structural framework. It also lacks version control and change-tracking functionality, creating risks of unnoticed data loss and making it difficult to reconstruct previous data states.
+
+The current, mainly decentralized approach makes cross-project collaboration difficult. When data from multiple projects must be combined, each individual file has to be located, verified, and merged manually. This process increases the risk that important datasets are overlooked, duplicated, or become inconsistent between projects. To avoid fragmentation and loss of oversight, a centralized geospatial infrastructure is required. The key principle is to establish a single source of truth — a unified database where all relevant spatial entities (e.g., wind turbines, parcels, infrastructure elements) are stored and managed consistently. The centralized storage does not prevent decentralized use. Subsets of the data can still be filtered, exported, or referenced in individual project files, but the underlying database ensures that the authoritative information remains consistent and complete. A relational database management system with geospatial extensions, like PostGIS, provides such a foundation. It combines structured storage, performance, and integration capabilities with mechanisms for multi-user access, data security and data versioning if needed. File-based formats will still play a role for exchange and local work, but we suggest that the core planning data is better maintained in a database environment.
+
+\section{Relational Databases}
+
+Relational databases are a proven standard across many industries, including energy, logistics, finance, and urban planning. They are used to manage interdependent datasets where data integrity is critical. The same principles that enable management of millions of transactions or utility assets can be applied to renewable energy project development. A relational database structures data in tables with clearly defined relationships, avoiding redundancy and inconsistency. Consider the example of land parcels (Flurstücke) and landowners. A naive approach would store all parcel information in one table, with additional columns for owner details such as name, address, or age. If one owner holds 100 parcels, their information is repeated 100 times. This is inefficient and makes updates error-prone. In a relational model, owners and parcels are stored in separate tables. A third table defines the relationships between them. This “many-to-many relation” allows multiple owners per parcel and multiple parcels per owner without duplication. If an address changes, it only needs to be updated once. This principle of separating entities and linking them through relations ensures non-redundant storage and consistent and reliable data across projects \cite{chen1976, brinkhoff2022}. The same logic applies to other planning-relevant data, such as wind turbines and their technical specifications, grid connections, or environmental constraints.
+
+\section{Geospatial Relations}
+
+Traditionally, spatial checks (e.g., whether a planned turbine lies within a certain zoning area) are performed manually through GIS interfaces. This is time-consuming and prone to oversight. A database with geospatial capabilities allows such tasks to be automated and scaled. By extending structured query language (SQL) with spatial functions, it becomes possible to run geometric analyses directly within the database environment \cite{brinkhoff2022, postgis_docs}.
+This allows users to perform operations such as buffering, overlaying, and distance calculations on geometries. Furthermore, spatial joins can be used to relate datasets based on location — for instance, linking wind turbines to land-use categories or assigning parcels to municipalities. In addition, combining and filtering datasets through SQL queries allows for reproducible analyses. This shifts the workflow from manual checks towards standardized queries, enabling faster analysis, consistent results and better traceability.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Data Model}\label{chap:datamodel}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+To design a robust geospatial infrastructure, it is first necessary to define what information the system should represent and how different elements relate to each other. The data model forms the conceptual foundation for subsequent database and interface developments.
+The level of detail represented in a model is always a trade-off between completeness and maintainability. A more detailed model allows for higher analytical accuracy but increases the long-term effort for data maintenance and documentation. Conversely, a simplified model reduces complexity and upkeep but may generalize certain real-world aspects.
+For the current stage of work, the chosen model aims to capture only essential entities and relationships with a minimal level of detail, acknowledging that future refinement may be needed as workflows and requirements evolve.
+
+The data model is structured into two groups: \textit{Business Unit (BU) Data}, representing company-owned or project-related assets and \textit{Authority Data}, representing external or official datasets from public authorities. The model was created using Draw.io (\url{https://draw.io/}), and the associated XML file can be found in the Appendix \hyperlink{app:A1}{A.1} for future adaptation or extension.
+In the following sections, we first introduce the notation and structure of Entity–Relationship Models, then describe the content of both model groups, and conclude with an overview of attribute assignment.
+
+\section{Entity-Relationship Modeling}
+
+The Entity–Relationship Model (ERM) \cite{chen1976} formalizes the relevant entities—such as turbines, parcels, landowners—and the relationships between them. Each entity is represented as a rectangular box, contains a primary key, which is a unique identifier for distinguishing real-world features that can later be visualized in GIS, as well as a defined geometry type. The geometry types used in the entity definitions follow the Open Geospatial Consortium (OGC) Simple Feature specification \cite{ogc_simple_features}. The German entity name is also included for clarity. Arrow lines indicate specialization, meaning that the child entity inherits both geometry and primary key from its parent. The diamond-shaped symbols represent relationships. A relationship can either be one-to-one (1:1), one-to-many (1:n), or many-to-many (n:m) \cite{er_tu_berlin}. No totality constraints were introduced to preserve flexibility during data entry. The ERM only focuses on the non-spatial relationships between entities. Spatial relations (such as containment, overlap, distance) are not stored explicitly and can be computed dynamically through queries with spatial joins. An example of the ERM notation is shown in Figure \ref{fig1}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[scale=0.1]{Figures/ERM_notation.png}
+\caption{Example of ERM notation}
+\label{fig1}
+\end{figure}
+
+\section{Business Unit Data}
+
+A Business Unit (BU) is an abstract entity defined by management to group and structure assets. Currently, around 35 BUs exist, with roughly 25 added within the last year. Data within the Business Unit group is mostly maintained by project developers and other internal staff. This group therefore represents the dynamic part of the data model: real-world features that frequently change as planning progresses. In our proposed Model (Figure \ref{fig2}), each BU can “own” or be associated with multiple asset types (entities), forming one-to-many relationships with Wind turbines (WEA), Battery energy storage systems (BESS), Cable routes, Photovoltaic areas (PV), Pool areas, Substations and Access roads. Some of these entities hold sub-entities: Access roads can have multiple over-swing areas. A WEA can have a (temporal or permanent) crane site. For both WEAs and cable routes entities, the model distinguishes between existing and planned, as their attributes and data sources typically differ throughout the planning process. Additionally, potential areas that are often not yet assigned to a specific BU are included for completeness. Finally, each BU can be linked to several parcels, connecting the internal and authority domains.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{Figures/ERM_BU.png}
+\caption{ERM of the Business Unit Data}
+\label{fig2}
+\end{figure}
+
+\section{Authority Data}
+
+This part of the model represents relatively static datasets that are updated only when authorities publish new data or when legal regulations change. Providers such as \url{https://nefino.de/} offer bundled datasets that can be used to populate these entities. The proposed model (Figure \ref{fig3}) represents the hierarchical structure of cadastral and administrative units: Flurstücke (parcels) belong to Fluren (cadastral districts), which belong to Gemarkungen (cadastral areas), which belong to Gemeinden (municipalities), which belong to Landkreise (districts), which belong to Bundesländer (states). Since one parcel can have multiple landowners and one owner can hold multiple parcels, the $<$owns$<$ relationship is modeled as many-to-many. This includes both types of landowners: natural persons and \textit{rechtliche Einheiten} (legal entities, e.g., associations or churches).
+
+The model also displays which authorities may issue land-use plans (FNP), development plans (B-Plans) and priority areas for wind energy (Vorranggebiete Wind). Beyond the hierarchical structure, several thematic or environmental datasets are integrated for contextual analysis: Protected areas, height restriction zones, water bodies, forests, buildings, external WEA, pipes/conduits, streets, and railways. Their detailed administrative dependencies and relations are not explicitly modeled at this stage, given that they are not critical for the current scope of the project.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{Figures/ERM_Authority.png}
+\caption{ERM of the Authority Data}
+\label{fig3}
+\end{figure}
+
+\section{Attribute Lists}
+
+For each entity represented in the ERM, an attribute list defines the key characteristics that describe the entity. One can distinguish between primary attributes, those that store unique or directly observed information (e.g. the object ID or its name), and secondary attributes which can be calculated from primary attributes of the entity itself or of a relative entity.
+In addition to that there are generic metadata attributes such as timestamps (\texttt{created\_at}, \texttt{updated\_at}), editor information (\texttt{created\_by}, \texttt{updated\_by}), and geometry-related metrics such as coordinates (for \texttt{Point} or \texttt{MultiPoint} entities), line length (for \texttt{LineString} or \texttt{MultiLineString} entities), or area (for \texttt{Polygon} or \texttt{MultiPolygon} entities).
+
+Attributes are intentionally omitted from the ERM in Figure \ref{fig3}) and Figure \ref{fig3} to keep the diagram clear and focused on conceptual relationships. Table \ref{table:attributes} shows the suggested attribute list of WEA as an exemplary entity. A set of all entities attribute lists can be found in the Appendix \hyperlink{app:A2}{A.2}.
+The set of all attribute lists is a preliminary proposal and the final decisions on attribute selection and standardization should be made in consultation with the responsible teams.
+An attribute list specifies the attributes names, types, and descriptions. The type indicates the data type but also whether an attribute serves as a primary key (pk) or foreign key (fk), thereby documenting the underlying relationships between entities.
+
+\begin{table}[h!]
+\centering
+\footnotesize
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Attribute} & \textbf{Type} & \textbf{Description} \\
+\midrule
+
+wea\_id     & integer, pk & ID to uniquely identify a wind turbine (WEA). \\
+
+bu\_name    & text, fk of bu   & Name of the related Business Unit. \\
+
+model       & text         & Manufacturer of the wind turbine (e.g., Vestas, Nordex, Enercon). \\
+
+capacity    & text         & Rated power output of the turbine in megawatts (MW). \\
+
+ground\_elev & double      & Elevation of the ground where the turbine is installed, measured above sea level (m). \\
+
+hub\_ht     & double       & Height from the ground to the rotor hub (m). \\
+
+rot\_dia    & double       & Total rotor diameter, distance across the blades (m). \\
+
+total\_ht   & double       & Total height from ground to highest blade tip (m). \\
+
+wea\_nr     & text         & Turbine number. Should be unique within each Business Unit. \\
+
+fun\_dia    & double       & Diameter of the turbine foundation (m). \\
+
+con\_rad    & double       & Construction circle radius for assembly, maintenance, and crane operations (m). \\
+
+rot\_wind   & double       & Main wind direction at the turbine location, expressed in degrees. \\
+
+status\_wea & text         & Operational state of the turbine (Planned, Operational, Maintenance, Decommissioned). \\
+
+nxw\_share  & text         & NextWind's ownership share or percentage. \\
+\bottomrule
+\end{tabularx}
+\caption{Proposed attributes of the wind turbine (WEA) entity}\label{table:attributes}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Database Setup, Utilization and Automation}\label{chap:database}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Once the data model and all attributes have been defined, it can be implemented in a relational database. We use PostgreSQL together with its spatial extension PostGIS \cite{postgresql_docs, postgis_docs}. The extension allows us to directly store and process spatial data, enabling spatial queries and geometric operations to be executed efficiently inside the database.
+
+The database can be either self-hosted (for full control over configuration and access) or operated through a cloud service provider. For this prototype, we use a PostgreSQL instance hosted by Neon (\url{https://neon.com/}), which offers the required administrative privileges like implementing the schema, installing extensions, and creating trigger functions. Avoid using connection pooling, as it can cause issues with triggers, and session-specific settings, which may also affect desktop GIS connections.
+
+\section{Creation of entities and relations}
+
+In the first step, the model structure needs to be inserted into the database. All entities and their relationships from the ERM are transferred into database tables as listed in the attribute lists. Each entity becomes a table in the database, while relationships between entities are represented through foreign keys. An exception is the $<$owns$>$ relationship of the authority data. Since it is the only many-to-many relationship a separate linking table is required to be added to the database.
+
+For entities containing spatial information, the geometry column must be defined with the correct geometry type (e.g. \texttt{Point}, \texttt{LineString}, \texttt{Polygon}, \texttt{MultiPolygon}, etc.). We store geometries in WGS 84 / EPSG:4326 for consistency, but use EPSG:25832 for calculations of lengths and areas, since EPSG:4326 is not metric \cite{epsg_dataset}. The \texttt{geom} column, which stores the geometries in Well-Known Binary (WKB) format \cite{ogc_simple_features}, is always defined as NOT NULL.
+
+As an example, Script \ref{script:wea} shows the transformation of the WEA entity attribute list (As seen in Table \ref{table:attributes}) into SQL Code. The complete SQL-Script to create all entities and relations can be found in the Appendix \hyperlink{app:B1}{B.1}.
+
+\begin{script}
+\caption{SQL Example — Creating the WEA table}
+\begin{lstlisting}[style=sqlstyle]
+CREATE TABLE wea(
+    wea_id serial PRIMARY KEY,
+    bu_name text REFERENCES bu(bu_name) ON UPDATE CASCADE,
+    
+    model text,
+    capacity text,
+    ground_elev double precision,
+    hub_ht double precision,
+    rot_dia double precision,
+    total_ht double precision,
+    wea_nr text,
+    fun_dia double precision,
+    con_rad double precision,
+    rot_wind double precision,
+    status_wea text,
+    nxw_share text,
+
+    -- Coordinates
+    latitude_dd double precision,
+    longitude_dd double precision,
+    latitude_dms text,
+    longitude_dms text,
+    utm_zone text,
+    utm_easting double precision,
+    utm_northing double precision,
+
+    -- Metadata
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now(),
+    created_by text DEFAULT current_user,
+    updated_by text DEFAULT current_user,
+
+    geom geometry(Point, 4326) NOT NULL
+);
+\end{lstlisting}
+\label{script:wea}
+\end{script}
+
+\section{Querying examples}
+
+Querying describes the process of interacting with the database, such as retrieving, adding, modifying, or removing information. Furthermore, queries are the main tool to transform the database from a static data store into a dynamic analytical resource. Operations are performed through SQL syntax and include \texttt{SELECT} (to retrieve data or create filtered datasets), \texttt{INSERT} (to add new records), \texttt{UPDATE} (to modify existing entries), \texttt{DELETE} (to remove records) and \texttt{JOIN} (to combine information from multiple tables based on relationships), but also many more. In practice, even changes made through desktop GIS interfaces are internally translated into SQL operations. Script \ref{script:insert} to Script \ref{script:rankdistance} show several example queries illustrating possible use cases in the current setup. 
+
+\begin{script}
+\caption{SQL Example — Insert a new wind turbine}
+\begin{lstlisting}[style=sqlstyle]
+INSERT INTO wea (bu_name, model, capacity, ground_elev, hub_ht,
+    rot_dia, total_ht, wea_nr, fun_dia, con_rad, rot_wind,
+    status_wea, nxw_share, geom)
+VALUES ('Altmark', 'N-175', '6.8', '45', '179', '175', '266',
+    'W01', '30', '106', '45', 'In Planning', '100%',
+    ST_SetSRID(ST_MakePoint(11.4512112, 52.7386130), 4326));
+\end{lstlisting}
+\label{script:insert}
+\end{script}
+
+\begin{script}
+\caption{SQL Example — Update an attribute}
+\begin{lstlisting}[style=sqlstyle]
+UPDATE wea SET status_wea = 'In Operation'
+WHERE bu_name = 'Altmark' AND wea_nr = 'W01';
+\end{lstlisting}
+\label{script:update}
+\end{script}
+
+\begin{script}
+\caption{SQL Example — Delete an outdated object}
+\begin{lstlisting}[style=sqlstyle]
+DELETE FROM potential_area WHERE potential_id = '42';
+\end{lstlisting}
+\label{script:delete}
+\end{script}
+
+%\begin{script}
+%\caption{SQL Example — Retrieve all Business Units}
+%\begin{lstlisting}[style=sqlstyle]
+%SELECT * from bu;
+%\end{lstlisting}
+%\label{script:select}
+%\end{script}
+
+\begin{script}
+\caption{SQL Example — Average length of all cable routes}
+\begin{lstlisting}[style=sqlstyle]
+SELECT AVG(length_geom) AS avg_cable_length_m FROM cable_route;
+\end{lstlisting}
+\label{script:average}
+\end{script}
+
+\begin{script}
+\caption{SQL Example — Owner with the most parcels (+ parcel list)}
+\begin{lstlisting}[style=sqlstyle]
+SELECT o.firstname, o.secondname, COUNT(p.parcel_id) AS parcel_count, STRING_AGG(p.parcel_nr, ', ') AS parcel_list
+FROM land_owner o
+JOIN parcel_owner po ON o.owner_id = po.owner_id
+JOIN parcel p ON p.parcel_id = po.parcel_id
+GROUP BY o.owner_id
+ORDER BY parcel_count DESC
+LIMIT 1;
+\end{lstlisting}
+\label{script:countparcel}
+\end{script}
+
+\begin{script}
+\caption{SQL Example — Rank Business Units by distance to Buxtehude}
+\begin{lstlisting}[style=sqlstyle]
+-- Assume the centroid of all WEA defines the BU location.
+SELECT 
+    bu_name,
+    ST_Distance(
+        ST_Centroid(ST_Collect(w.geom))::geography,
+        ST_SetSRID(ST_MakePoint(9.7036, 53.4763), 4326)::geography
+    ) AS distance_m
+FROM wea AS w
+GROUP BY bu_name
+ORDER BY distance_m;
+\end{lstlisting}
+\label{script:rankdistance}
+\end{script}
+
+\section{Views}
+
+A view is a saved query that can combine or filter data from multiple tables and presents the result as a single virtual dataset. Views display up-to-date information from the underlying tables without requiring users to understand the internal data structure. A view can be queried via: \texttt{SELECT [...] FROM [viewname]}. They are particularly useful for simplifying frequently used or complex queries and can provide ready-to-use data layers for integration into external systems. In the following, two examples illustrate how views can simplify access to relevant project information.
+
+\subsection{Example: Combine parcels with landowner names}
+
+In the early development phase of wind farms, negotiations with landowners regarding parcel leasing are frequent. To support this process, maps showing which parcels belong to which owners are required. The database, however, stores parcels and landowners in separate tables. The view shown in Script \ref{script:view1} defines a query that joins these tables to create a virtual dataset listing each parcel along with the names of its owners. This allows project teams to directly use the view as a layer in desktop GIS applications. The query of the view can easily be adjusted to include more detailed owner information if needed. 
+
+\begin{script}
+\caption{SQL Example — Create a view to lists parcels with landowner names}
+{\small
+\begin{lstlisting}[style=sqlstyle, basicstyle=\footnotesize]
+CREATE OR REPLACE VIEW gis_views.parcels_with_ownernames AS
+SELECT
+    p.geom,
+    p.parcel_id,
+    p.bu_name,
+    p.kennz,
+    STRING_AGG(
+        TRIM(
+            COALESCE(o.secondname, '') || ' ' || COALESCE(o.firstname, '')
+        ),
+        ', ' ORDER BY o.firstname, o.secondname
+    ) AS owners
+FROM parcel p
+LEFT JOIN parcel_owner po ON po.parcel_id = p.parcel_id
+LEFT JOIN land_owner o ON o.owner_id = po.owner_id
+GROUP BY p.parcel_id, p.bu_name, p.kennz
+ORDER BY p.parcel_id;
+\end{lstlisting}
+}
+\label{script:view1}
+\end{script}
+
+\subsection{Example: Table for WEA approval Bundeswehr}
+
+The Bundeswehr (German Armed Forces) are involved in the approval process for wind turbines under the Federal Immission Control Act (Bundes-Immisionsschutzgesetzt or BImSchG). Its role is to ensure that military interests (such as radar installations or flight paths) are not affected by any wind turbines with a total height of more than 50 meters.
+Information about each turbine must be submitted to the Bundeswehr in a specific tabular format (see Figure \ref{fig4}). The view shown in Script \ref{script:view2} defines a query that joins the tables WEA, Gemarkung, Flur, and Parcel based on their spatial overlaps to produce a virtual dataset matching this format. Note that the view’s substring parser which splits the coordinates only works if the entries contain all values in the correct form (which gets ensured through geometry-based attribute recalculation in Section \ref{sect:attrcalc}). The dataset can then be directly exported as an Excel file, eliminating the need for manual data entry and ensuring that the information provided is consistent and up to date. 
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{Figures/Approval_Bundeswehr.png}
+\caption{Excel template used for Bundeswehr requests in the BImSchG approval process}
+\label{fig4}
+\end{figure}
+
+\begin{script}
+\caption{SQL Example — Create a view to output WEA information in the required Bundeswehr format}
+\begin{lstlisting}[style=sqlstylesmall]
+CREATE OR REPLACE VIEW gis_views.bundeswehr_approval AS
+SELECT
+  w.wea_id,
+  w.bu_name                    AS "Name des Windparks",
+  w.wea_nr                     AS "WEA-Bezeichnung",
+  w.model                      AS "WEA-Typ",
+  w.hub_ht                     AS "NH in m",
+  w.rot_dia                    AS "RD in m",
+
+  (substring(w.latitude_dms FROM $$([0-9]+)°$$))::INT
+    AS "Nord Grad",
+  (substring(w.latitude_dms FROM $$([0-9]+)min$$))::INT
+    AS "Nord Minute",
+  (substring(w.latitude_dms FROM $$([0-9]+(?:\.[0-9]+)?)sek$$))::NUMERIC
+    AS "Nord Sekunde",
+  (substring(w.longitude_dms FROM $$([0-9]+)°$$))::INT
+    AS "Ost Grad",
+  (substring(w.longitude_dms FROM $$([0-9]+)min$$))::INT
+    AS "Ost Minute",
+  (substring(w.longitude_dms FROM $$([0-9]+(?:\.[0-9]+)?)sek$$))::NUMERIC
+    AS "Ost Sekunde",
+
+  w.capacity                   AS "Anlagennennleistung in KW",
+  w.total_ht                   AS "Anlagenhöhe über Grund in m",
+  w.ground_elev                AS "Geländehöhe m NHN im Bezugssystem",
+  (COALESCE(w.total_ht,0) + COALESCE(w.ground_elev,0))
+    AS "Gesamt-höhe mNHN",
+  gm.gem_name                  AS "Gemarkung",
+  fl.flur_nr                   AS "Flur",
+  pa.parcel_nr                 AS "Flurstück",
+  w.geom::geometry(Point,4326) AS geom
+
+FROM  public.wea   w
+LEFT JOIN LATERAL (
+  SELECT g.gem_name
+  FROM public.gemarkung g
+  WHERE ST_Contains(ST_Transform(g.geom,4326), w.geom)
+  LIMIT 1
+) gm ON true
+LEFT JOIN LATERAL (
+  SELECT f.flur_nr
+  FROM public.flur f
+  WHERE ST_Contains(ST_Transform(f.geom,4326), w.geom)
+  LIMIT 1
+) fl ON true
+LEFT JOIN LATERAL (
+  SELECT p.parcel_nr
+  FROM public.parcel p
+  WHERE ST_Contains(ST_Transform(p.geom,4326), w.geom)
+  LIMIT 1
+) pa ON true;
+\end{lstlisting}
+\label{script:view2}
+\end{script}
+
+\section{Automation with Trigger Functions}
+
+To ensure data consistency and reduce manual maintenance, the database makes use of trigger functions that are automated routines which execute whenever certain database events occur. A trigger is a database mechanism that “listens” for changes to a table (e.g. an \texttt{INSERT}, \texttt{UPDATE}, or \texttt{DELETE} operation) and executes a predefined function in response. Triggers do not distinguish between operations originating from SQL query tools or from desktop GIS software.
+The underlying trigger functions are written in PL/pgSQL (Procedural Language / PostgreSQL), which allows procedural logic such as conditional statements, loops, and arithmetic operations to be combined with standard SQL. Triggers are a powerful way to automate recurring tasks or maintain derived attributes without requiring user intervention.
+The proposed triggers for the database cover two routines, as described in Sections \ref{sect:metadata} and \ref{sect:attrcalc}.
+Script \ref{script:trigger} illustrates the implementation of the two routines for entities of geometry type \texttt{Polygon} or \texttt{MultiPolygon}. The complete SQL-Script for creating and linking all triggers is provided in the Appendix \hyperlink{app:B2}{B.2}.
+
+\subsection{Automatic metadata tracking}\label{sect:metadata}
+
+Whenever an entry in any main table is inserted or modified, the trigger automatically fills the \texttt{updated\_at} attribute with the timestamp of the moment of the entry modification. Furthermore, the \texttt{updated\_by} attribute gets filled with the username through which the user established the database connection. This ensures a transparent edit history without requiring manual input from users.
+
+\subsection{Geometry-based attribute calculation}\label{sect:attrcalc}
+
+For spatial tables, geometric metadata attributes are automatically (re-)calculated whenever the value of the \texttt{geom} column changes or a new entry gets inserted. This is useful for maintaining correct values for derived metrics, e.g. when turbine locations are moved or polygon boundaries are corrected. Depending on geometry type the generic metadata attributes \texttt{area\_geom} (for \texttt{Polygon} or \texttt{MultiPolygon}), the \texttt{length\_geom} (for \texttt{LineString} or \texttt{MultiLineString}), or the coordinate representations (for \texttt{Point} or \texttt{MultiPoint}) get (re-)calculated.
+Coordinate representations include the attributes: \texttt{latitude\_dd} and \texttt{longitude\_dd} (for decimal degrees representation), \texttt{latitude\_dms} and \texttt{longitude\_dms} (for representation in degrees–minutes–seconds) and \texttt{utm\_zone}, \texttt{utm} \texttt{\_northing} and \texttt{utm\_easting} (for representation within their Universal Transverse Mercator Zone).
+
+\begin{script}
+\caption{SQL Example — Metadata tracking and area calculation for polygons}
+\begin{lstlisting}[style=sqlstyle]
+CREATE OR REPLACE FUNCTION set_metadata_polygon()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at := now();
+    NEW.updated_by := current_user;
+    IF NEW.geom IS DISTINCT FROM OLD.geom THEN
+        NEW.area_geom := ST_Area(ST_Transform(NEW.geom, 25832));
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+\end{lstlisting}
+\label{script:trigger}
+\end{script}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Conclusion}\label{chap:conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The goal of this report was to design a data model that captures the most essential geospatial aspects of NeXtWind’s digital twin and aligns them with the company’s internal structure and strategic needs. To support this model, a PostgreSQL/PostGIS database was proposed as the central geospatial infrastructure, together with a set of functionalities such as views and trigger functions, that optimize data access, automation, and consistency. Throughout the report, short explanations of ERM modeling principles and relevant SQL concepts were provided to enable readers to understand the design decisions and functionality.
+
+The proposed model intentionally includes only a minimal set of entities and attributes. This reflects the current level of available domain knowledge and acknowledges the complexity of wind farm planning. However, the model is deliberately structured in an open and extensible way so that additional attributes, entities, or constraints can be added as workflows develop and more detailed requirements become clear.
+%Potential extensions include defining allowed attribute values and constraints to improve data consistency, expanding the integration of environmental entities into the administrative authority structure for more advanced site assessments. Another possible extension is the introduction of a contract entity to support closer alignment with the Commercial Asset Management Team.
+Potential extensions include:
+(1) defining more attributes and allowed value constraints to improve data quality and consistency,
+(2) expanding the integration of environmental entities into the administrative authority structure to support more advanced site assessments, and
+(3) introducing a contract entity to enable closer alignment with the Commercial Asset Management Team, allowing more precise management and visualization of different contractual rights tied to land parcels, for example separate contracts for turbine locations, cable routes, or substations.
+
+From a technical perspective, the report demonstrated a possible implementation pathway: defining and creating tables based on the data model, designing views for simplified and standardized access to datasets, and implementing trigger functions to automate updates and calculations on metadata attributes. Additional database administration topics such as user and user group creation or privilege management could be addressed in future work to support a secure multi-user environment. Further enhancements might include using PostgreSQL extensions like \texttt{temporal\_tables} or \texttt{pg\_partman} to introduce system versioning through historical tables.
+
+Looking ahead, several development directions are possible. A WebGIS interface or a GeoServer-based service layer could be built on top of the database, exposing only prepared views as Web Feature Services or Web Map Services to ensure that users work with clean, standardized datasets rather than raw tables. Interfaces to other tools, such as Airtable, could be established through API-based synchronization. Automated map-generation tools, producing contract maps for specific Business Units or landowners could further streamline planning workflows.
+
+By identifying the challenges in the current workflow, introducing a coherent data model, and outlining an implementation based on PostgreSQL/PostGIS, this report proposes a more organized and reliable approach to managing spatial information. We aim to provide a clear overview of the energy sector context, data modeling principles, and relational database concepts. Ultimately, the report is intended to offer practical value to the organization and support informed decision-making as NeXtwind’s digital strategy continues to evolve.
+
+%\cleardoublepage
+%\bibliographystyle{plain}
+\bibliographystyle{plainnat}
+\bibliography{literatur}
+\addcontentsline{toc}{chapter}{Bibliography}
+
+
+\chapter*{Appendix}\label{chap:appendix}
+\addcontentsline{toc}{chapter}{Appendix}
+
+All materials, diagrams, SQL scripts and datasets used in this report are publicly available in the associated GitHub repository:
+
+\noindent\url{https://github.com/hendrini/Intern_Report}
+\section*{Appendix Overview}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|p{0.04\textwidth}|p{0.40\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|}
+
+\hline
+\textbf{ID} & \textbf{Material Description} & \textbf{Source / GitHub Path} \\ 
+\hline
+
+A.1 & ERM diagram file for import into \url{https://draw.io/}\phantomsection\hypertarget{app:A1} &  
+\url{https://github.com/hendrini/Intern_Report/blob/main/Datamodel/ERM.drawio} \\ 
+\hline
+
+A.2 & Attribute Lists (complete attribute specifications for all entities)\hypertarget{app:A2} & 
+\url{https://github.com/hendrini/Intern_Report/blob/main/Datamodel/Attribute_Lists.xlsx} \\
+\hline
+
+B.1 & SQL script — creation of all entity and relationship tables + views\hypertarget{app:B1} & 
+\url{https://github.com/hendrini/Intern_Report/blob/main/SQL/create_tables_and_views.sql} \\
+\hline
+
+
+
+B.2 & SQL script — implementation of automated trigger routines (metadata + geometry calculations)\hypertarget{app:B2} & 
+\url{https://github.com/hendrini/Intern_Report/blob/main/SQL/trigger_functions.sql} \\
+\hline
+
+
+\end{tabular}
+\caption{List of all appendix materials and their storage locations}
+\end{table}
+
+
+
+\vfill
+\section*{Acknowledgments}
+\noindent\textit{\small Special thanks to Behrooz Rostami, Victor Garzón and Kamen Radew for their valuable input and support throughout and beyond the development of this report.}
+
+
+
+
+
+
+% Todos:
+
+
+
+%Add Literature? PostGIS Website, Paper aus den 90ern, TU Tutorials
+
+%Final durchlesen
+
+%Nachricht an Gerold: Es ist ein bisschen informatiklastiger geworden als gedacht, aber das war meine Arbeit dort. Ich habe mir beim schreiben sehr viel Mühe gegeben, gerne Feedback. Wann Präsentation?
+
+\end{document}
