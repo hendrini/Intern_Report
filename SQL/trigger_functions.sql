@@ -291,9 +291,9 @@ BEFORE INSERT OR UPDATE ON planning_region
 FOR EACH ROW
 EXECUTE FUNCTION set_metadata_polygon();
 
-DROP TRIGGER IF EXISTS set_metadata_trigger ON vorranggebiet_wind;
+DROP TRIGGER IF EXISTS set_metadata_trigger ON vrg;
 CREATE TRIGGER set_metadata_trigger
-BEFORE INSERT OR UPDATE ON vorranggebiet_wind
+BEFORE INSERT OR UPDATE ON vrg
 FOR EACH ROW
 EXECUTE FUNCTION set_metadata_polygon();
 

@@ -1,9 +1,12 @@
+-- Create PostGIS extensions
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS postgis_topology;
 
-#ALTER DATABASE [your_database_name] SET TIMEZONE TO 'Europe/Berlin';
-#SET TIMEZONE TO 'Europe/Berlin';
+-- Uncomment to set timezone
+-- ALTER DATABASE [your_database_name] SET TIMEZONE TO 'Europe/Berlin';
+-- SET TIMEZONE TO 'Europe/Berlin';
 
+------------------------------- CREATE TABLES ---------------------------------
 CREATE TABLE bu(
     bu_name text PRIMARY KEY,
     bu_short text,
@@ -476,7 +479,7 @@ CREATE TABLE parcel_owner (
     PRIMARY KEY (parcel_id, owner_id)
 );
 
-
+-------------------------------- CREATE VIEWS ---------------------------------
 
 CREATE SCHEMA gis_views
 
